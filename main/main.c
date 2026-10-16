@@ -388,7 +388,10 @@ static void status(emu_json_t *j, int section)
         emu_json_row(j, "ROMs", s_rom_text);
         cpc_status_t s;
         cpc_get_status(&s);
-        snprintf(text, sizeof(text), "mode %d, %d × %d characters, 50 Hz%s", s.mode, s.crtc[1], s.crtc[6],
+        /* CRTC characters are 2 bytes: 4, 8 or 16 pixels in modes 0, 1, 2 */
+        static const uint8_t pixels_per_char[4] = { 4, 8, 16, 4 };
+        snprintf(text, sizeof(text), "mode %d, %d × %d pixels, 50 Hz%s", s.mode,
+                 s.crtc[1] * pixels_per_char[s.mode & 3], s.crtc[6] * ((s.crtc[9] & 31) + 1),
                  s.plus ? (s.asic_unlocked ? ", ASIC unlocked" : ", ASIC locked") : "");
         emu_json_row(j, "Screen", text);
         emu_json_row(j, "Joystick", s_arrows_joystick ? "numeric keypad and cursor keys (F12)"

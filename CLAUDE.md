@@ -184,6 +184,7 @@ screenshots; `screenshot` reports 768x300 and saves it as 768x600):
 | `basic-6128.png` | The 6128 starting up in BASIC 1.1 (board) |
 | `cpm22.png` | CP/M 2.2 after `\|CPM`, `DIR` (board) |
 | `cpm-plus.png` | CP/M Plus v1.0, 61K TPA, `DIR` (board) |
+| `web.png` | Web page with example data, after dropping a ZIP of two `.dsk` (local node server, as in esp32emu's notes; Chrome's upload tool only takes files under esp32mac/esp32ste/esp32emu, so stage them in `../esp32mac/build/`) |
 | `basic.png`, `plus-menu.png`, `burnin-rubber-title.png`, `burnin-rubber.png`, `boulder-dash-rom.png` | Host build renders; not in the README |
 
 ## Working with the user

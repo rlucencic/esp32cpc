@@ -76,6 +76,11 @@ SE, Classic); all three are built on the shared runtime
   watch the CPC, drives, board and Bluetooth devices live
 - **Sound** on the board's speaker (optional, `menuconfig`)
 
+<p align="center">
+  <img src="docs/images/web.png" width="80%" alt="The web page: CPC, drives, board and Bluetooth status, the drop area for disks, cartridges, ROMs and ZIP files, and the files on the SD card">
+  <br><sub>The web page, right after a ZIP file with two disk images was dropped on it (example data)</sub>
+</p>
+
 ## Hardware
 
 | | |
