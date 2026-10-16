@@ -1,0 +1,12 @@
+build/
+managed_components/
+sdkconfig
+sdkconfig.old
+dependencies.lock
+roms/*.rom
+roms/*.cpr
+components/cpc/host/build/
+__pycache__/
+*.ppm
+.DS_Store
+.vscode
