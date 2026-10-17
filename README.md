@@ -33,8 +33,9 @@ handle everything else.
 
 It's the sibling of [esp32ste](https://github.com/rlucencic/esp32ste) (Atari
 STE), [esp32mac](https://github.com/rlucencic/esp32mac) (Macintosh Plus,
-SE, Classic) and [esp32zx](https://github.com/rlucencic/esp32zx) (ZX
-Spectrum 128K, +2, +3); all four are built on the shared runtime
+SE, Classic), [esp32zx](https://github.com/rlucencic/esp32zx) (ZX
+Spectrum 128K, +2, +3) and [esp32cbm](https://github.com/rlucencic/esp32cbm)
+(Commodore 64 and 128); all five are built on the shared runtime
 [esp32emu](https://github.com/rlucencic/esp32emu).
 
 ## Features
@@ -197,7 +198,8 @@ flowchart LR
   drives and status.
 - **[esp32emu](https://github.com/rlucencic/esp32emu)**: the board runtime,
   the Z80 core (timed in CPC microseconds here) and the uPD765 floppy
-  controller, shared with [esp32zx](https://github.com/rlucencic/esp32zx).
+  controller, shared with [esp32zx](https://github.com/rlucencic/esp32zx)
+  (the Z80 also with [esp32cbm](https://github.com/rlucencic/esp32cbm)'s C128).
 
 Time runs in CRTC characters (1 µs). The video advances with every
 instruction, drawing each character inside the monitor's visible window
