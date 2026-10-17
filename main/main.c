@@ -272,7 +272,7 @@ static void model_set(int i)
 }
 
 static const emu_choice_t choices[] = {
-    { "Model", model_names, model_get, model_set },
+    { "Model", model_names, model_get, model_set, false },
 };
 
 /* ---- Disks and the cartridge slot ---- */
