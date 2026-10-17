@@ -35,8 +35,9 @@ handle everything else.
 It's the sibling of [esp32ste](https://github.com/rlucencic/esp32ste) (Atari
 STE), [esp32mac](https://github.com/rlucencic/esp32mac) (Macintosh Plus,
 SE, Classic), [esp32zx](https://github.com/rlucencic/esp32zx) (ZX
-Spectrum 128K, +2, +3) and [esp32cbm](https://github.com/rlucencic/esp32cbm)
-(Commodore 64 and 128); all five are built on the shared runtime
+Spectrum 128K, +2, +3), [esp32cbm](https://github.com/rlucencic/esp32cbm)
+(Commodore 64 and 128) and [esp32xl](https://github.com/rlucencic/esp32xl)
+(Atari 800XL and 130XE); all six are built on the shared runtime
 [esp32emu](https://github.com/rlucencic/esp32emu).
 
 ## Features
@@ -130,7 +131,7 @@ ROMs, you can also copy them into a `roms` folder on the SD card.
    network: the clock is set from the internet, and the web page becomes
    reachable.
 2. Tap **Bluetooth** to pair a keyboard (and a mouse, if you want one).
-3. Choose the **model**, then tap **Start CPC**.
+3. Choose the **model**, then tap **Start**.
 4. Open `http://amstrad.local` and drop disk images or cartridges onto the
    page, then **Insert into… → A:** (or **Cartridge**).
 
@@ -139,7 +140,7 @@ ROMs, you can also copy them into a `roms` folder on the SD card.
 | To | Do |
 |---|---|
 | Get back to the setup screen | Hold the top-right corner of the screen for 2 s |
-| Change the model | On the setup screen; **Restart CPC** applies it |
+| Change the model | On the setup screen; **Restart** applies it |
 | Insert a disk | Web page: **Insert into…**, or setup screen → **Disks** → **Insert disk** |
 | Catalogue and run | `CAT`, then `RUN"NAME` (CP/M: `|CPM` with a CP/M system disk) |
 | Make a blank disk | Web page: **New blank disk**, or setup screen → **New empty disk** |
