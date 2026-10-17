@@ -12,9 +12,6 @@
 
 cpc_t cpc;
 
-uint8_t *cpc_rd[4];
-uint8_t *cpc_wr[4];
-
 static int s_carry;             /* us the last instruction ran into this frame */
 static uint8_t s_cmos[64];      /* Symbiface II RTC RAM */
 
@@ -66,33 +63,33 @@ void mem_update(void)
     for (int i = 0; i < 4; i++) {
         uint8_t page = ram_map[config][i];
         uint32_t offset = page < 4 ? page * 0x4000 : 0x10000 + bank * 0x10000 + (page - 4) * 0x4000;
-        cpc_rd[i] = cpc_wr[i] = ram + offset;
+        z80_rd[i] = z80_wr[i] = ram + offset;
     }
     if (!(cpc.rom_config & 0x04)) {
         if (cpc.plus) {
             int pos = (cpc.rmr2 >> 3) & 3;
-            cpc_rd[pos == 3 ? 0 : pos] = (uint8_t *)cart_page(cpc.rmr2 & 7);
+            z80_rd[pos == 3 ? 0 : pos] = (uint8_t *)cart_page(cpc.rmr2 & 7);
         } else {
-            cpc_rd[0] = (uint8_t *)cpc.cfg.os;
+            z80_rd[0] = (uint8_t *)cpc.cfg.os;
         }
     }
     if (!(cpc.rom_config & 0x08)) {
-        cpc_rd[3] = (uint8_t *)upper_rom();
+        z80_rd[3] = (uint8_t *)upper_rom();
     }
     if (cpc.plus && (cpc.rmr2 & 0x18) == 0x18) {
-        cpc_rd[1] = asic.page;
-        cpc_wr[1] = NULL;       /* cpc_write_special() */
+        z80_rd[1] = asic.page;
+        z80_wr[1] = NULL;       /* write_special() */
     }
 }
 
-void cpc_write_special(uint16_t addr, uint8_t v)
+static void write_special(uint16_t addr, uint8_t v)
 {
     asic_write(addr, v);
 }
 
 uint8_t cpc_peek(uint16_t address)
 {
-    return mem_rd(address);
+    return z80_peek(address);
 }
 
 /* ---- Interrupts ---- */
@@ -102,7 +99,7 @@ void cpc_update_int(void)
     z80.int_line = video_ga_int() || (cpc.plus && asic_int_pending());
 }
 
-uint8_t cpc_int_ack(void)
+static uint8_t int_ack(void)
 {
     uint8_t vector = 0xFF;
     if (cpc.plus && !video_ga_int() && asic_int_pending()) {
@@ -229,7 +226,7 @@ static void select_upper_rom(uint8_t v)
     mem_update();
 }
 
-void CPC_HOT cpc_out(uint16_t port, uint8_t v, int at)
+static void CPC_HOT io_out(uint16_t port, uint8_t v, int at)
 {
     io_sync(at);
     uint8_t hi = port >> 8;
@@ -273,9 +270,9 @@ void CPC_HOT cpc_out(uint16_t port, uint8_t v, int at)
     }
     if (!(port & 0x0480)) {
         if (!(port & 0x0100)) {
-            fdc_motor(v & 1);
+            upd765_motor(v & 1);
         } else if (port & 1) {
-            fdc_write(v);
+            upd765_write(v);
         }
     }
     if (hi == 0xFD) {
@@ -287,7 +284,7 @@ void CPC_HOT cpc_out(uint16_t port, uint8_t v, int at)
     }
 }
 
-uint8_t CPC_HOT cpc_in(uint16_t port, int at)
+static uint8_t CPC_HOT io_in(uint16_t port, int at)
 {
     io_sync(at);
     uint8_t hi = port >> 8;
@@ -300,7 +297,7 @@ uint8_t CPC_HOT cpc_in(uint16_t port, int at)
         v &= ppi_read(hi & 3);
     }
     if (!(port & 0x0480) && (port & 0x0100)) {
-        v &= (port & 1) ? fdc_read() : fdc_status();
+        v &= (port & 1) ? upd765_read() : upd765_status();
     }
     if (hi == 0xFD) {
         uint8_t lo = port & 0xFF;
@@ -330,7 +327,7 @@ void cpc_reset(void)
     asic_reset();
     video_reset();
     psg_reset();
-    fdc_reset();
+    upd765_reset();
     input_reset();
     mem_update();
     cpc_update_int();
@@ -362,6 +359,11 @@ bool cpc_init(const cpc_config_t *config)
     memset(config->ram, 0, config->ram_size);
     s_cmos[10] = 0x26;
     s_cmos[11] = 0x02;
+    static const z80_bus_t bus = {
+        .in = io_in, .out = io_out, .int_ack = int_ack, .write_special = write_special,
+    };
+    z80_set_bus(&bus);
+    upd765_set_creator("esp32cpc");
     audio_init();
     cpc_reset();
     return true;
@@ -399,7 +401,7 @@ void CPC_HOT cpc_run_frame(void)
     }
 #endif
     audio_frame_end();
-    fdc_frame();
+    upd765_frame();
     cpc.frames++;
 }
 

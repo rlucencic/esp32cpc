@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "upd765.h"
 
 typedef enum {
     CPC_MODEL_464,
@@ -47,7 +48,7 @@ static inline bool cpc_model_is_plus(cpc_model_t m)
 
 #define CPC_ROM_SIZE            16384
 #define CPC_CART_MAX            (512 * 1024)
-#define CPC_DRIVES              2       /* A: and B: */
+#define CPC_DRIVES              UPD765_DRIVES   /* A: and B: */
 #define CPC_ROM_SLOTS           16      /* upper ROM numbers 0-15 */
 
 typedef struct {
@@ -117,31 +118,26 @@ int cpc_audio_pending(void);
 
 /* ---- Floppy disks: drives 0 (A:) and 1 (B:) ----
  *
- * DSK and extended DSK images, read into memory; writes go back to the
- * file with cpc_disk_flush() (only the tracks that changed, unless a
- * format changed the layout). Not while cpc_run_frame() runs.
+ * The uPD765 and its DSK and extended DSK images are esp32emu's
+ * (upd765.h); these are its disk calls. Not while cpc_run_frame() runs.
  */
-bool cpc_disk_insert(int drive, const char *path);
-void cpc_disk_eject(int drive);
-const char *cpc_disk_path(int drive);       /* NULL when empty */
-bool cpc_disk_write_protected(int drive);
-bool cpc_disk_dirty(void);                  /* something to flush */
-void cpc_disk_flush(void);
+static inline bool cpc_disk_insert(int drive, const char *path) { return upd765_disk_insert(drive, path); }
+static inline void cpc_disk_eject(int drive) { upd765_disk_eject(drive); }
+static inline const char *cpc_disk_path(int drive) { return upd765_disk_path(drive); }
+static inline bool cpc_disk_write_protected(int drive) { return upd765_disk_write_protected(drive); }
+static inline bool cpc_disk_dirty(void) { return upd765_disk_dirty(); }
+static inline void cpc_disk_flush(void) { upd765_disk_flush(); }
 
 /* A formatted blank disk: `bytes` 184320 = data format (40 tracks of 9
  * sectors $C1-$C9), 173056 = system (vendor) format ($41-$49)
  */
-bool cpc_disk_create(const char *path, uint32_t bytes);
+static inline bool cpc_disk_create(const char *path, uint32_t bytes)
+{
+    return upd765_disk_create(path, 40, 9, bytes == 173056 ? 0x41 : 0xC1, NULL);
+}
 
-typedef struct {
-    int light;                  /* drive accessed in the last ~0.3 s, -1 none */
-    uint32_t reads[CPC_DRIVES]; /* sectors read and written */
-    uint32_t writes[CPC_DRIVES];
-    uint8_t track[CPC_DRIVES];  /* head position */
-    bool motor;
-} cpc_disk_status_t;
-
-void cpc_disk_status(cpc_disk_status_t *status);
+typedef upd765_status_t cpc_disk_status_t;
+static inline void cpc_disk_status(cpc_disk_status_t *status) { upd765_disk_status(status); }
 
 /* ---- Cartridge slot ----
  *

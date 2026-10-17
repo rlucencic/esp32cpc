@@ -7,7 +7,9 @@
 #include <stdint.h>
 #include "cpc.h"
 #include "z80.h"
-#include "z80_bus.h"
+
+/* Code on the emulation's hot path */
+#define CPC_HOT     Z80_HOT
 
 #ifdef ESP_PLATFORM
 #include "esp_heap_caps.h"
@@ -120,15 +122,6 @@ uint8_t psg_read(void);                 /* PPI port A in */
 void psg_write_reg(uint8_t reg, uint8_t v);      /* also the Plus DMA */
 void audio_init(void);
 void audio_frame_end(void);
-
-/* ---- fdc.c: uPD765 ---- */
-
-void fdc_reset(void);
-uint8_t fdc_status(void);
-uint8_t fdc_read(void);
-void fdc_write(uint8_t v);
-void fdc_motor(bool on);
-void fdc_frame(void);
 
 /* ---- input.c ---- */
 

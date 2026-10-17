@@ -259,6 +259,9 @@ int main(int argc, char **argv)
         return 1;
     }
     cpc_draw_every_frame(!getenv("CPC_SKIP"));
+    if (getenv("CPC_NEWDISK") && !cpc_disk_create(getenv("CPC_NEWDISK"), 184320)) {
+        fprintf(stderr, "can't make %s\n", getenv("CPC_NEWDISK"));
+    }
     for (int d = 0; d < CPC_DRIVES; d++) {
         const char *path = getenv(d ? "CPC_DISKB" : "CPC_DISKA");
         if (path && !cpc_disk_insert(d, path)) {

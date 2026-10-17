@@ -99,3 +99,6 @@ CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
 
 # The board runtime (../esp32emu): network name
 CONFIG_EMU_HOSTNAME="amstrad"
+
+# The shared Z80 core (../esp32emu/components/z80) counts CPC microseconds
+CONFIG_Z80_TIMING_CPC=y

@@ -8,10 +8,12 @@ ESP-IDF v5.5.4, C.
 
 The board side (tasks, LCD, touch, SD, WiFi, BLE, setup screen, web page,
 console) is the shared library in `../esp32emu`, also used by `../esp32ste`
-(Atari STE) and `../esp32mac` (Macintosh). See its CLAUDE.md for the runtime
-and the board-level lessons; changes there need all three projects built.
-The CPC has its own Z80 core here (`components/cpc/z80.c`); esp32emu's
-Musashi isn't used.
+(Atari STE), `../esp32mac` (Macintosh) and `../esp32zx` (ZX Spectrum). See
+its CLAUDE.md for the runtime and the board-level lessons; changes there
+need all four projects built. The Z80 core (`components/z80`, started here)
+and the uPD765 (`components/upd765`) live in esp32emu too, shared with the
+Spectrum (+3); `CONFIG_Z80_TIMING_CPC=y` (sdkconfig.defaults and sdkconfig)
+makes the core count CPC microseconds.
 
 ## Hardware
 
@@ -56,18 +58,20 @@ RETURN), `j <bits>` joystick, `m dx dy btn` mouse, `R <model>` restart as
 | `main/rom_store.c` | ROMs from the `cpc_roms` partition slots, else the SD card's `roms/` |
 | `main/settings.c` | NVS `cpc`: `model` (the RAM follows the model) |
 | `components/cpc/` | The CPC, platform independent (`include/cpc.h`) |
-| `components/cpc/host/` | Host build: `cpc_host` and `z80_test` (see Testing) |
+| `components/cpc/host/` | Host build: `cpc_host` (see Testing; the Z80 test is esp32emu's) |
 | `roms/` | `os464.rom` ... `system.cpr` (see `roms/README.md`; not in git) |
 | `partitions.csv` | nvs, phy, factory 8 MB, cpc_roms 512K (type 0x40), storage |
 
 ## The core (`components/cpc`)
 
-- `z80.c`: own Z80, passes zexdoc and zexall (all 67). One switch per page;
-  DD/FD reuse the unprefixed code with IX/IY in place of HL. Times are CPC
-  microseconds (tables from Caprice32's cycle tables / 4: every M-cycle
-  waits for the Gate Array's 1 us grid). `cpc_in/out(port, v, at)` get the
-  microsecond inside the instruction where the access happens (OUT (C),r at
-  3 of 4, OUTI at 4 of 5, IN at the end); the machine advances the video to
+- Z80: esp32emu's `components/z80` (passes zexdoc and zexall, all 67). One
+  switch per page; DD/FD reuse the unprefixed code with IX/IY in place of
+  HL. Here its times are CPC microseconds (tables from Caprice32's cycle
+  tables / 4: every M-cycle waits for the Gate Array's 1 us grid). The bus
+  functions (`io_in/io_out(port, v, at)` in `cpc.c`, given to
+  `z80_set_bus()`) get the microsecond inside the instruction where the
+  access happens (OUT (C),r at 3 of 4, OUTI at 4 of 5, IN at the end); the
+  machine advances the video to
   that point first. IM 1 interrupt 5 us, IM 2 7 us; IM 0 reads $FF (RST 38).
 - `cpc.c`: memory map (16 KB read/write bank pointers, 6128 RAM configs and
   512 KB expansion banks; a NULL write bank = the ASIC page), I/O decoding
@@ -92,10 +96,11 @@ RETURN), `j <bits>` joystick, `m dx dy btn` mouse, `R <model>` restart as
 - `psg.c`: AY through the PPI (port C bits 7-6 = BDIR/BC1), register 14 =
   keyboard line; event queue to the render side like the ST's YM (32 us per
   sample, 31250 Hz).
-- `fdc.c`: uPD765, non-DMA, no rotation timing; reads end with "end of
-  cylinder" like on a CPC (no terminal count). DSK/EDSK parsed into tracks
-  in memory; `cpc_disk_flush()` writes changed tracks in place, or the whole
-  file as EDSK after a format.
+- uPD765: esp32emu's `components/upd765` (`cpc_disk_*` in `cpc.h` are
+  wrappers). Non-DMA, no rotation timing; reads end with "end of cylinder"
+  like on a CPC (no terminal count). DSK/EDSK parsed into tracks in memory;
+  flushing writes changed tracks in place, or the whole file as EDSK after
+  a format (creator "esp32cpc").
 - `cart.c`: `.cpr` (RIFF AMS!, cbNN chunks) or expansion ROMs into slots
   1-6, 8-15 (NAME_1.ROM brings NAME_2.ROM ...). Inserting resets.
 - `input.c`: input queue from other tasks, matrix, joystick, AMX mouse (one
@@ -151,8 +156,14 @@ Plus memory: cartridge page 0 is the lower ROM (RMR2 moves it to &4000 or
   | mouse dx dy b | shot <ppm> | insert <d> <path> | eject <d> | cart <path>
   | peek <hex> | reset`), `CPC_STATUS=<n>`, `CPC_TRACE=<pc>[:<n>]`,
   `CPC_WAV=<file>`, `CPC_SKIP` (draw every other picture, as on the board),
-  `CPC_QUIET`. `build/z80_test <prelim.com|zexdoc.cim|zexall.cim>` (from
-  github.com/superzazu/z80 roms/; ~30 s each).
+  `CPC_QUIET`, `CPC_NEWDISK=<dsk>` (a blank data-format disk first). The
+  Z80 test: `make -C ../esp32emu/components/z80/test`, then
+  `build/z80_test_cpc <prelim.com|zexdoc.cim|zexall.cim>` (from
+  github.com/superzazu/z80 roms/; ~40 s each).
+- Moving the Z80 and the uPD765 to esp32emu (2026-10-17) was checked
+  bit-for-bit: 464, 6128 and 6128 Plus pictures after 400 frames and a
+  script (type a program, SAVE, CAT, RUN on a blank disk) gave identical
+  screenshots and disk images before and after.
 - Verified on the host: all five models boot (464 BASIC 1.0, 664/6128 BASIC
   1.1, Plus menu and BASIC); 6128 SAVE/CAT/LOAD on a blank disk made by
   `cpc_disk_create`; Burnin' Rubber from the system cartridge (title,

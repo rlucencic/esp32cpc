@@ -32,8 +32,9 @@ card. A setup screen on the touch panel, and a web page on your network,
 handle everything else.
 
 It's the sibling of [esp32ste](https://github.com/rlucencic/esp32ste) (Atari
-STE) and [esp32mac](https://github.com/rlucencic/esp32mac) (Macintosh Plus,
-SE, Classic); all three are built on the shared runtime
+STE), [esp32mac](https://github.com/rlucencic/esp32mac) (Macintosh Plus,
+SE, Classic) and [esp32zx](https://github.com/rlucencic/esp32zx) (ZX
+Spectrum 128K, +2, +3); all four are built on the shared runtime
 [esp32emu](https://github.com/rlucencic/esp32emu).
 
 ## Features
@@ -189,12 +190,14 @@ flowchart LR
   NET <--> SD
 ```
 
-- **`components/cpc`**: the CPC, platform independent, with its own Z80. It
-  also builds on a desktop (`components/cpc/host`) for testing with scripted
-  typing, joystick and mouse, screenshots, sound recording and CPU traces.
+- **`components/cpc`**: the CPC, platform independent. It also builds on a
+  desktop (`components/cpc/host`) for testing with scripted typing,
+  joystick and mouse, screenshots, sound recording and CPU traces.
 - **`main`**: the CPC on the board: memory, ROMs, settings, keyboard map,
   drives and status.
-- **[esp32emu](https://github.com/rlucencic/esp32emu)**: the board runtime.
+- **[esp32emu](https://github.com/rlucencic/esp32emu)**: the board runtime,
+  the Z80 core (timed in CPC microseconds here) and the uPD765 floppy
+  controller, shared with [esp32zx](https://github.com/rlucencic/esp32zx).
 
 Time runs in CRTC characters (1 µs). The video advances with every
 instruction, drawing each character inside the monitor's visible window
@@ -207,7 +210,8 @@ second anyway), and only lines that changed are copied.
 
 ```sh
 make -C components/cpc/host                                     # desktop build of the CPC
-components/cpc/host/build/z80_test zexall.cim                   # the Z80 exerciser
+make -C ../esp32emu/components/z80/test                         # the Z80 exerciser:
+../esp32emu/components/z80/test/build/z80_test_cpc zexall.cim
 CPC_DISKA=game.dsk components/cpc/host/build/cpc_host 6128 500 out.ppm
 
 python ../esp32emu/tools/emu_console.py /dev/cu.usbmodem… lcd screen.png   # screenshot of the panel
