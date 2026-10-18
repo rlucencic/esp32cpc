@@ -78,8 +78,8 @@ IIGS); all eight are built on the shared runtime
   the joystick port and a Symbiface II PS/2 mouse at the same time
 - **Joystick** on the numeric keypad, and on the cursor keys after F12
 - **Web page** at `http://amstrad.local`: drop disk images, cartridges, ROMs or
-  `.ZIP` files onto it, put them into drives, eject, make blank disks, and
-  watch the CPC, drives, board and Bluetooth devices live
+  `.ZIP` files onto it (with a progress bar), put them into drives, eject, make
+  blank disks, and watch the CPC, drives, board and Bluetooth devices live
 - **Sound** on the board's speaker (optional, `menuconfig`)
 
 <p align="center">
