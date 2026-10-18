@@ -9,11 +9,12 @@ ESP-IDF v5.5.4, C.
 The board side (tasks, LCD, touch, SD, WiFi, BLE, setup screen, web page,
 console) is the shared library in `../esp32emu`, also used by `../esp32ste`
 (Atari STE), `../esp32mac` (Macintosh), `../esp32zx` (ZX Spectrum),
-`../esp32cbm` (Commodore 64, 128) and `../esp32xl` (Atari 800XL, 130XE).
-See its CLAUDE.md for the runtime and the board-level lessons; changes
-there need all six projects built, for both boards. The Z80 core (`components/z80`, started here)
+`../esp32cbm` (Commodore 64, 128), `../esp32xl` (Atari 800XL, 130XE),
+`../esp32msx` (MSX1, MSX2) and `../esp32gs` (Apple IIGS). See its CLAUDE.md
+for the runtime and the board-level lessons; changes there need all eight
+projects built, for both boards. The Z80 core (`components/z80`, started here)
 and the uPD765 (`components/upd765`) live in esp32emu too, shared with the
-Spectrum (+3); `CONFIG_Z80_TIMING_CPC=y` (sdkconfig.defaults and sdkconfig)
+Spectrum (+3) (the Z80 also with the C128 and the MSX); `CONFIG_Z80_TIMING_CPC=y` (sdkconfig.defaults and sdkconfig)
 makes the core count CPC microseconds.
 
 ## Hardware
