@@ -176,6 +176,13 @@ Plus memory: cartridge page 0 is the lower ROM (RMR2 moves it to &4000 or
 
 ## Testing
 
+- **Debugger** (esp32emu's `components/emudbg`, the VS Code extension
+  `../esp32emu-vscode`): the board serves it on port 6502;
+  `CPC_DEBUG=<port> build/cpc_host ...` serves it from the host build, which
+  then runs in real time until killed. The CPUs (Z80), `where()`,
+  the screen and typing are described in `components/cpc/cpc.c` (`emudbg_set_machine()`
+  at every init).
+
 - **Host build**: `make -C components/cpc/host`, then
   `build/cpc_host <464|664|6128|464plus|6128plus> [frames] [out.ppm]`
   (picture doubled to 768x600). Environment: `CPC_ROMS=<dir>` (default

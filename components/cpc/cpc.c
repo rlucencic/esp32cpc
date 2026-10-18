@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include "cpc_internal.h"
+#include "emudbg.h"
 #ifdef CPC_PROFILE
 #include "esp_cpu.h"
 #endif
@@ -333,6 +334,33 @@ void cpc_reset(void)
     cpc_update_int();
 }
 
+/* ---- The debugger (emudbg.h) ---- */
+
+static emudbg_cpu_t s_dbg_cpus[] = {
+    { .name = "Z80", .arch = &emudbg_arch_z80 },
+};
+
+static void dbg_where(char *buf, size_t len)
+{
+    snprintf(buf, len, "frame %lu", (unsigned long)cpc.frames);
+}
+
+static void dbg_screen(int *width, int *height)
+{
+    *width = CPC_SCREEN_WIDTH;
+    *height = CPC_SCREEN_HEIGHT;
+}
+
+static emudbg_machine_t s_dbg = {
+    .cpus = s_dbg_cpus,
+    .cpu_count = 1,
+    .where = dbg_where,
+    .reset = cpc_reset,
+    .screen = dbg_screen,
+    .render_line = cpc_render_line_rgb565,
+    .type = cpc_type,
+};
+
 bool cpc_init(const cpc_config_t *config)
 {
     cpc_t old = cpc;
@@ -366,6 +394,8 @@ bool cpc_init(const cpc_config_t *config)
     upd765_set_creator("esp32cpc");
     audio_init();
     cpc_reset();
+    s_dbg.name = cpc.plus ? "Amstrad CPC Plus" : "Amstrad CPC";
+    emudbg_set_machine(&s_dbg);
     return true;
 }
 

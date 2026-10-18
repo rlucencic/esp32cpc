@@ -25,9 +25,12 @@
  *   CPC_TRACE=<pc>[:<n>]    disassemble n instructions from when PC is reached
  *   CPC_WAV=<file>          record the sound (stereo WAV)
  *   CPC_QUIET               no summary
+ *   CPC_DEBUG=<port>        serve the debugger (esp32emu's docs/debugger.md) on
+ *                           127.0.0.1:<port> and run in real time until killed
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include "emudbg.h"
 #include <string.h>
 #include <time.h>
 #include "cpc.h"
@@ -282,6 +285,7 @@ int main(int argc, char **argv)
         s_trace_pc = pc;
         s_trace_on = true;
     }
+    emudbg_host_run("CPC_DEBUG", cpc_run_frame, 50);
     int status_every = getenv("CPC_STATUS") ? atoi(getenv("CPC_STATUS")) : 0;
     FILE *wav = getenv("CPC_WAV") ? fopen(getenv("CPC_WAV"), "wb") : NULL;
     uint32_t wav_frames = 0;
