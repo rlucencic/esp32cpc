@@ -15,6 +15,11 @@
 </p>
 
 <p align="center">
+  <b>Work in progress:</b> not everything has been tested, and games and demos may or may not
+  work satisfactorily.
+</p>
+
+<p align="center">
   <img alt="The CPC 6128 starting up: Amstrad 128K Microcomputer (v3), BASIC 1.1, Ready" src="docs/images/basic-6128.png" width="49%">
   <img alt="CP/M 2.2 from a 6128 system disk: DIR of drive A:" src="docs/images/cpm22.png" width="49%">
   <br>
