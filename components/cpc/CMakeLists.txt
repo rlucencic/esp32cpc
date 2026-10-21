@@ -5,9 +5,11 @@ idf_component_register(SRCS "cpc.c"
                             "psg.c"
                             "input.c"
                             "cart.c"
+                            "disk.c"
                        INCLUDE_DIRS "include"
                        PRIV_INCLUDE_DIRS "."
-                       REQUIRES z80 upd765)
+                       REQUIRES z80 upd765
+                       PRIV_REQUIRES diskspace)
 
 # Runs in the emulation loop. Jump tables for the switches (the IDF turns
 # them off for code that may run with the flash cache disabled; the

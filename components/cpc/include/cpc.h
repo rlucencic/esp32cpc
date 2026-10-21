@@ -121,12 +121,18 @@ int cpc_audio_pending(void);
  * The uPD765 and its DSK and extended DSK images are esp32emu's
  * (upd765.h); these are its disk calls. Not while cpc_run_frame() runs.
  */
-static inline bool cpc_disk_insert(int drive, const char *path) { return upd765_disk_insert(drive, path); }
-static inline void cpc_disk_eject(int drive) { upd765_disk_eject(drive); }
+bool cpc_disk_insert(int drive, const char *path);
+void cpc_disk_eject(int drive);
 static inline const char *cpc_disk_path(int drive) { return upd765_disk_path(drive); }
 static inline bool cpc_disk_write_protected(int drive) { return upd765_disk_write_protected(drive); }
 static inline bool cpc_disk_dirty(void) { return upd765_disk_dirty(); }
-static inline void cpc_disk_flush(void) { upd765_disk_flush(); }
+void cpc_disk_flush(void);
+
+/* A disk's free space and size in bytes as AMSDOS counts them (data,
+ * system and IBM formats), worked out at insert, eject and flush; false
+ * when not known. Any task.
+ */
+bool cpc_disk_space(int drive, uint64_t *free_bytes, uint64_t *size);
 
 /* A formatted blank disk: `bytes` 184320 = data format (40 tracks of 9
  * sectors $C1-$C9), 173056 = system (vendor) format ($41-$49)

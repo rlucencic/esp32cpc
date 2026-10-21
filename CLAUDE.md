@@ -129,6 +129,10 @@ bash -c '. $IDF_PATH/export.sh >/dev/null 2>&1; \
   like on a CPC (no terminal count). DSK/EDSK parsed into tracks in memory;
   flushing writes changed tracks in place, or the whole file as EDSK after
   a format (creator "esp32cpc").
+- `disk.c`: insert, eject, flush, and at each of them the disks' free space
+  for the web page, as AMSDOS counts it (esp32emu's `diskspace`): data,
+  system or IBM format by track 0's lowest sector ID, AMSDOS's fixed
+  parameter blocks (40 tracks, 64 entries, 1 KB blocks).
 - `cart.c`: `.cpr` (RIFF AMS!, cbNN chunks) or expansion ROMs into slots
   1-6, 8-15 (NAME_1.ROM brings NAME_2.ROM ...). Inserting resets.
 - `input.c`: input queue from other tasks, matrix, joystick, AMX mouse (one
@@ -209,6 +213,8 @@ Plus memory: cartridge page 0 is the lower ROM (RMR2 moves it to &4000 or
 - Not verified yet: sound on the speaker, BLE keyboard/mouse on the CPC,
   disks/cartridges through the web page and the setup screen on the board,
   the Plus on the board, SymbOS (SF2 mouse/RTC), AMX mouse programs.
+- **Free disk space** (`disk.c`): host, CAT's own figures (172K, 168K);
+  Tab5 (2026-10-21): a blank data disk 182272 of 184320 (178K).
 
 ## Open items
 
