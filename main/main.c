@@ -251,6 +251,9 @@ static void hid_key(uint8_t usage, bool pressed)
     }
 }
 
+/* A Bluetooth mouse, and the touch screen as a touchpad (the runtime's:
+ * its moves in the picture's pixels, mode 2's across, a count each)
+ */
 static void hid_mouse(int dx, int dy, uint8_t buttons)
 {
     cpc_mouse(dx, dy, buttons);
@@ -511,6 +514,7 @@ static const emu_machine_t machine = {
     .audio_pending = cpc_audio_pending,
     .hid_key = hid_key,
     .hid_mouse = hid_mouse,
+    .touchpad = hid_mouse,
     .choices = choices,
     .choice_count = 1,
     .disks = &disks,

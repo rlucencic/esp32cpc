@@ -2,7 +2,7 @@
 
 An Amstrad CPC (Z80, Gate Array, CRTC, AY, uPD765; the Plus ASIC) on an
 ESP32-S3 board with a 1024x600 touch LCD. Bluetooth keyboard and optional
-mouse, disk images in A: and B:, a cartridge slot for Plus cartridges and
+mouse (or the touch screen as a touchpad), disk images in A: and B:, a cartridge slot for Plus cartridges and
 expansion ROMs, an LVGL setup screen, a web page for images and live status.
 ESP-IDF v5.5.4, C.
 
@@ -82,7 +82,7 @@ bash -c '. $IDF_PATH/export.sh >/dev/null 2>&1; \
 
 | Path | What |
 |---|---|
-| `main/main.c` | The CPC as an `emu_machine_t`: memory, start, key map, joystick, drives, status, console |
+| `main/main.c` | The CPC as an `emu_machine_t`: memory, start, key map, joystick, mouse and touchpad (a count a picture pixel), drives, status, console |
 | `main/rom_store.c` | ROMs from the `cpc_roms` partition slots, else the SD card's `roms/` |
 | `main/settings.c` | NVS `cpc`: `model` (the RAM follows the model) |
 | `components/cpc/` | The CPC, platform independent (`include/cpc.h`) |
@@ -219,7 +219,9 @@ Plus memory: cartridge page 0 is the lower ROM (RMR2 moves it to &4000 or
 ## Open items
 
 - No tape (`.cdt`), printer, CRTC type differences, FDC timing.
-- Touch screen unused (only the setup corner).
+- **Clock** (the clock audit, 2026-10-21: `../esp32emu/CLAUDE.md`, To do):
+  the Symbiface II's DS1287 ignores writes (SymbOS can't set it); before NTP
+  (the MaTouch) it reads 1970.
 
 ## README and GitHub
 

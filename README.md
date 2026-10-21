@@ -2,7 +2,7 @@
 
 <p align="center">
   <b>An Amstrad CPC 464, 664, 6128, 464 Plus or 6128 Plus on a 7-inch ESP32-S3 touch-screen board or an M5Stack Tab5.</b><br>
-  Z80 with the real CPC timing, Plus hardware sprites and 4096 colours, disks, cartridges, Bluetooth keyboard and mouse.
+  Z80 with the real CPC timing, Plus hardware sprites and 4096 colours, disks, cartridges, Bluetooth keyboard and mouse, the touch screen as a touchpad.
 </p>
 
 <p align="center">
@@ -33,7 +33,7 @@
 esp32cpc turns the Makerfabs MaTouch ESP32-S3 Parallel TFT with Touch 7", or an
 M5Stack Tab5, into an Amstrad CPC. The whole monitor picture, border included, fills the
 panel's height at mode 2 resolution; a Bluetooth keyboard (and mouse, if you
-like) work the CPC, and disk images and cartridges come from the microSD
+like, or the touch screen as a touchpad) work the CPC, and disk images and cartridges come from the microSD
 card. A setup screen on the touch panel, and a web page on your network,
 handle everything else.
 
@@ -88,6 +88,10 @@ all are built on the shared runtime
   real-time clock (SymbOS shows the right time)
 - **Bluetooth keyboard and mouse** (BLE HID). The mouse is an AMX mouse on
   the joystick port and a Symbiface II PS/2 mouse at the same time
+- **The touch screen as a touchpad**, on both boards, for when there's no
+  mouse at hand (a Bluetooth mouse is the better way): drag a finger
+  anywhere to move the mouse, tap to click, tap and touch again to drag,
+  hold still half a second for the second button
 - **Joystick** on the numeric keypad, and on the cursor keys after F12
 - **Web page** at `http://amstrad.local`: drop disk images, cartridges, ROMs or
   `.ZIP` files onto it (with a progress bar), put them into drives, eject, make
@@ -106,7 +110,7 @@ all are built on the shared runtime
 | Chip | ESP32-S3-WROOM-1-N16R8: 16 MB flash, 8 MB octal PSRAM | ESP32-P4 (RISC-V, 360 MHz): 16 MB flash, 32 MB PSRAM; an ESP32-C6 for WiFi and Bluetooth |
 | Screen | 7" 1024×600 RGB, GT911 capacitive touch | 5" 1280×720 MIPI-DSI, capacitive touch, held landscape |
 | Storage | microSD card (FAT32 or exFAT) | microSD card (FAT32 or exFAT) |
-| Input | any BLE keyboard, optionally a BLE mouse | any BLE keyboard, optionally a BLE mouse, or the Tab5 Keyboard |
+| Input | any BLE keyboard, optionally a BLE mouse; the touch screen as a touchpad | any BLE keyboard, optionally a BLE mouse, or the Tab5 Keyboard; the touch screen as a touchpad |
 | Sound | a speaker on the MAX98357A output (optional, `menuconfig`) | the built-in speaker (ES8388) |
 
 The CPC's picture is 768×300 (48 characters of 16 mode 2 pixels by 300
@@ -174,7 +178,10 @@ Insert is COPY, Delete is CLR, Backspace is DEL, Alt is COPY.
 as fire; F12 again gives them back.
 
 **Mouse**: art and desktop programs that know the AMX mouse (joystick port)
-or the Symbiface II mouse (SymbOS) follow a Bluetooth mouse.
+or the Symbiface II mouse (SymbOS) follow a Bluetooth mouse, or the touch
+screen as a touchpad: a finger moving anywhere on it moves the mouse, a
+tap clicks, a tap and touching again drags, holding still for half a
+second holds the second button.
 
 ## Configuration
 
@@ -199,7 +206,7 @@ flowchart LR
     PRES[Presenter<br>768×300 → 768×600]
     UI[Setup screen<br>LVGL]
     NET[WiFi · web page · mDNS]
-    BLE[Bluetooth HID]
+    BLE[Bluetooth HID · touchpad]
   end
   PSRAM[(PSRAM<br>CPC RAM · ROMs · cartridge · picture)]
   SD[(microSD<br>cpc/)]
