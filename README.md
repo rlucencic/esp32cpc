@@ -122,7 +122,7 @@ on a CPC monitor. On the Tab5 it is 922×720 (every scanline 2.4 times).
 
 ### 1. What you need
 
-- [ESP-IDF](https://github.com/espressif/esp-idf) v5.5 (developed with v5.5.4)
+- [ESP-IDF](https://github.com/espressif/esp-idf) v5.5 (developed with v5.5.6)
 - [esp32emu](https://github.com/rlucencic/esp32emu), checked out next to this project (`../esp32emu`)
 - The CPC ROM images in `roms/` (see [roms/README.md](roms/README.md))
 - A microSD card, FAT32 or exFAT

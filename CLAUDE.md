@@ -4,7 +4,7 @@ An Amstrad CPC (Z80, Gate Array, CRTC, AY, uPD765; the Plus ASIC) on an
 ESP32-S3 board with a 1024x600 touch LCD. Bluetooth keyboard and optional
 mouse (or the touch screen as a touchpad), disk images in A: and B:, a cartridge slot for Plus cartridges and
 expansion ROMs, an LVGL setup screen, a web page for images and live status.
-ESP-IDF v5.5.4, C.
+ESP-IDF v5.5.6, C.
 
 The board side (tasks, LCD, touch, SD, WiFi, BLE, setup screen, web page,
 console) is the shared library in `../esp32emu`, also used by `../esp32ste`
@@ -30,7 +30,7 @@ Build like the others (the shell's default Python environment doesn't match):
 
 ```sh
 bash -c '. $IDF_PATH/export.sh >/dev/null 2>&1; \
-  export IDF_PYTHON_ENV_PATH=/Users/robertlucencic/.espressif/tools/python/v5.5.4/venv; \
+  export IDF_PYTHON_ENV_PATH=/Users/robertlucencic/.espressif/tools/python/v5.5.6/venv; \
   export PATH=$IDF_PYTHON_ENV_PATH/bin:$PATH; \
   idf.py build && idf.py -p /dev/cu.usbmodem1101 app-flash'
 ```
@@ -59,7 +59,7 @@ beside the MaTouch build, on `/dev/cu.usbmodem3101`:
 
 ```sh
 bash -c '. $IDF_PATH/export.sh >/dev/null 2>&1; \
-  export IDF_PYTHON_ENV_PATH=/Users/robertlucencic/.espressif/tools/python/v5.5.4/venv; \
+  export IDF_PYTHON_ENV_PATH=/Users/robertlucencic/.espressif/tools/python/v5.5.6/venv; \
   export PATH=$IDF_PYTHON_ENV_PATH/bin:$PATH; \
   idf.py -B build-tab5 -DIDF_TARGET=esp32p4 -DSDKCONFIG=$PWD/build-tab5/sdkconfig build && \
   idf.py -B build-tab5 -DIDF_TARGET=esp32p4 -DSDKCONFIG=$PWD/build-tab5/sdkconfig -p /dev/cu.usbmodem3101 flash'
