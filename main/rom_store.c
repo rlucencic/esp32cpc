@@ -7,7 +7,7 @@
 #include "rom_store.h"
 
 #define ROM_PARTITION_TYPE  0x40
-#define ROM_FOLDER          SDCARD_MOUNT_POINT "/roms"
+#define ROM_FOLDER          SDCARD_MOUNT_POINT "/cpc/roms"
 #define CART_SLOT           10          /* system.cpr from 160 KB on */
 
 static const char *TAG = "rom";

@@ -141,7 +141,9 @@ idf.py -B build-tab5 -DIDF_TARGET=esp32p4 -DSDKCONFIG=build-tab5/sdkconfig -p /d
 ```
 
 Later updates only need `idf.py -p … app-flash`. Instead of flashing the
-ROMs, you can also copy them into a `roms` folder on the SD card.
+ROMs, you can also copy them into the `cpc/roms` folder on the SD card. A
+card set up before 2026-11-17 has them in a shared `roms` folder:
+esp32emu's `tools/sd_folders.ps1` moves them.
 
 ### 3. First start
 
@@ -166,7 +168,8 @@ ROMs, you can also copy them into a `roms` folder on the SD card.
 | Use expansion ROMs | Insert the `.rom` into **Cartridge**: the CPC restarts with it in slot 1 (2, 3 ... for more parts); then `|NAME` |
 | Copy files from a computer | Drop them onto the web page (ZIP files are unpacked), or `curl -T game.dsk http://amstrad.local/disks/` |
 
-Disk images, cartridges and ROMs live in the `cpc` folder on the SD card.
+Disk images, cartridges and expansion ROMs (for the cartridge slot) live in the `cpc`
+folder on the SD card; the machine's own ROMs, if not flashed, in `cpc/roms`.
 The inserted ones are remembered across restarts.
 
 **Keyboard**: keys by position, a UK CPC keyboard on a PC keyboard. F1–F10

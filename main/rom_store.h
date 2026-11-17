@@ -7,7 +7,7 @@
 /*
  * The CPC's ROMs: from the cpc_roms flash partition (roms/<name> in the
  * project, written by idf.py flash into 16 KB slots), else from the SD
- * card's "roms" folder under the same names.
+ * card's "cpc/roms" folder under the same names.
  */
 typedef enum {
     ROM_OS464, ROM_BASIC10, ROM_OS664, ROM_BASIC664, ROM_OS6128, ROM_BASIC11,
