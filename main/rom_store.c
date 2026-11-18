@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include "esp_log.h"
 #include "esp_partition.h"
 #include "emu/sdcard.h"
@@ -81,29 +82,37 @@ bool rom_store_load(rom_id_t id, uint8_t *buf)
     if (id >= ROM_COUNT) {
         return false;
     }
-    if (from_partition(id * CPC_ROM_SIZE, CPC_ROM_SIZE, buf) && plausible(buf)) {
-        return true;
+    if (from_sd(names[id], buf, CPC_ROM_SIZE) == CPC_ROM_SIZE && plausible(buf)) {
+        return true;                    /* the card's overrides the built-in one */
     }
-    return from_sd(names[id], buf, CPC_ROM_SIZE) == CPC_ROM_SIZE && plausible(buf);
+    return from_partition(id * CPC_ROM_SIZE, CPC_ROM_SIZE, buf) && plausible(buf);
+}
+
+bool rom_store_is_rom(const char *name)
+{
+    for (int i = 0; i < ROM_COUNT; i++) {
+        if (strcasecmp(name, names[i]) == 0) {
+            return true;
+        }
+    }
+    return strcasecmp(name, "system.cpr") == 0;
 }
 
 uint32_t rom_store_system_cart(uint8_t *pages, const char **name)
 {
     uint8_t head[8];
     uint32_t size = 0;
-    if (from_partition(CART_SLOT * CPC_ROM_SIZE, 8, head) && memcmp(head, "RIFF", 4) == 0) {
+    uint8_t *file = malloc(CPC_CART_MAX + 4096);    /* the card's overrides the built-in one */
+    long n = file ? from_sd("system.cpr", file, CPC_CART_MAX + 4096) : -1;
+    if (n > 0) {
+        size = cpc_cpr_pages(file, n, pages);
+    }
+    free(file);
+    if (size == 0 && from_partition(CART_SLOT * CPC_ROM_SIZE, 8, head) && memcmp(head, "RIFF", 4) == 0) {
         uint32_t len = 8 + (head[4] | (head[5] << 8) | (head[6] << 16) | ((uint32_t)head[7] << 24));
-        uint8_t *file = len <= CPC_CART_MAX + 4096 ? malloc(len) : NULL;
+        file = len <= CPC_CART_MAX + 4096 ? malloc(len) : NULL;
         if (file != NULL && from_partition(CART_SLOT * CPC_ROM_SIZE, len, file)) {
             size = cpc_cpr_pages(file, len, pages);
-        }
-        free(file);
-    }
-    if (size == 0) {
-        uint8_t *file = malloc(CPC_CART_MAX + 4096);
-        long n = file ? from_sd("system.cpr", file, CPC_CART_MAX + 4096) : -1;
-        if (n > 0) {
-            size = cpc_cpr_pages(file, n, pages);
         }
         free(file);
     }

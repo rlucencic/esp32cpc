@@ -5,9 +5,10 @@
 #include "cpc.h"
 
 /*
- * The CPC's ROMs: from the cpc_roms flash partition (roms/<name> in the
- * project, written by idf.py flash into 16 KB slots), else from the SD
- * card's "cpc/roms" folder under the same names.
+ * The CPC's ROMs: built in, from the cpc_roms flash partition (roms/<name>
+ * in the project, written by idf.py flash into 16 KB slots). A file of the
+ * same name in the SD card's "cpc/roms" folder (the cartridges' folder)
+ * overrides one.
  */
 typedef enum {
     ROM_OS464, ROM_BASIC10, ROM_OS664, ROM_BASIC664, ROM_OS6128, ROM_BASIC11,
@@ -18,6 +19,9 @@ const char *rom_store_name(rom_id_t id);   /* "os6128.rom" */
 
 /* 16 KB into buf; false if there's none */
 bool rom_store_load(rom_id_t id, uint8_t *buf);
+
+/* A built-in ROM's file name (system.cpr too): an override, not a cartridge */
+bool rom_store_is_rom(const char *name);
 
 /* The Plus system cartridge into pages (CPC_CART_MAX bytes): system.cpr,
  * else built from osplus.rom, basicplus.rom and amsdos.rom (pages 0, 1, 3).

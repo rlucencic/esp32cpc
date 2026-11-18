@@ -18,10 +18,11 @@ models you want are needed.
 
 All are 16 KB, except `system.cpr` (a RIFF cartridge file, 128 KB of pages).
 
-Without flashing, the emulator also finds them in the `cpc/roms` folder on
-the SD card under the same names. A card set up before 2026-11-17 has them
-in a shared `roms` folder: esp32emu's `tools/sd_folders.ps1 E:\`
-(PowerShell 7, the card in a card reader) moves them there.
+A file of the same name in the `cpc/roms` folder on the SD card (with the
+cartridges) is used instead of the flashed one. A card set up before
+2026-11-17 has such files in a shared `roms` folder: esp32emu's
+`tools/sd_folders.ps1 E:\` (PowerShell 7, the card in a card reader) moves
+them there.
 
 Amstrad allowed its CPC ROMs to be distributed with emulators, as long as the
 copyright messages stay intact; `amsdos.rom` and `system.cpr` are the ones

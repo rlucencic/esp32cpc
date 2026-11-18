@@ -83,7 +83,7 @@ bash -c '. $IDF_PATH/export.sh >/dev/null 2>&1; \
 | Path | What |
 |---|---|
 | `main/main.c` | The CPC as an `emu_machine_t`: memory, start, key map, joystick, mouse and touchpad (a count a picture pixel), drives, status, console |
-| `main/rom_store.c` | ROMs from the `cpc_roms` partition slots, else the SD card's `cpc/roms/` |
+| `main/rom_store.c` | ROMs from the `cpc_roms` partition slots; one of the same name in the SD card's `cpc/roms/` overrides it |
 | `main/settings.c` | NVS `cpc`: `model` (the RAM follows the model) |
 | `components/cpc/` | The CPC, platform independent (`include/cpc.h`) |
 | `components/cpc/host/` | Host build: `cpc_host` (see Testing; the Z80 test is esp32emu's) |
@@ -145,9 +145,10 @@ Plus memory: cartridge page 0 is the lower ROM (RMR2 moves it to &4000 or
 ## Persistent state
 
 - NVS `cpc`: `model`. NVS `cpcdisks`: `disk_a`..`disk_c` (A:, B:, cartridge).
-- SD card: `cpc/` (images, cartridges, expansion ROMs; made if missing), `cpc/roms/`
-  (optional system ROMs). Until 2026-11-17 a shared `roms/`: esp32emu's
-  `tools/sd_folders.ps1` moves an old card's files.
+- SD card: `cpc/` (disk images; made if missing), `cpc/roms/` (cartridges,
+  expansion ROMs, and system ROMs that override the flashed ones; made if
+  missing). Until 2026-11-17 a shared `roms/`, until 2026-11-18 cartridges
+  in `cpc/`: esp32emu's `tools/sd_folders.ps1` moves an old card's files.
 
 ## Memory budget (measured)
 

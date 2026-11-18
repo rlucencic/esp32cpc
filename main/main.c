@@ -62,8 +62,7 @@ static bool missing(const char *what)
 {
     static char message[200];
     snprintf(message, sizeof(message),
-             "No %s ROM: put %s into roms/ and flash with idf.py flash, or copy it into the "
-             "\"cpc/roms\" folder on the SD card.", model_full[settings.model], what);
+             "No %s ROM: put %s into roms/ and flash with idf.py flash.", model_full[settings.model], what);
     emu_set_message(message);
     return false;
 }
@@ -283,6 +282,7 @@ static const emu_choice_t choices[] = {
 enum { DRIVE_A, DRIVE_B, DRIVE_CART, DRIVES };
 
 static const char *const extensions[] = { ".dsk", ".cpr", ".rom", NULL };
+static const char *const cart_extensions[] = { ".cpr", ".rom", NULL };     /* in cpc/roms */
 static const char *const drive_names[] = { "A:", "B:", "Cartridge" };
 static const disks_size_t sizes[] = {
     { 184320, "178 KB data format" },
@@ -295,10 +295,14 @@ static bool has_ext(const char *name, const char *ext)
     return n > e && strcasecmp(name + n - e, ext) == 0;
 }
 
+/* A cartridge in cpc/roms, not a file there that overrides a built-in ROM */
 static bool accepts(int drive, const char *name)
 {
-    bool disk = has_ext(name, ".dsk");
-    return drive == DRIVE_CART ? !disk : disk;
+    if (drive != DRIVE_CART) {
+        return has_ext(name, ".dsk");
+    }
+    const char *base = strrchr(name, '/');
+    return (has_ext(name, ".cpr") || has_ext(name, ".rom")) && !rom_store_is_rom(base ? base + 1 : name);
 }
 
 static bool takes_blank(int drive)
@@ -339,6 +343,7 @@ static bool write_protected(int drive)
 static const disks_config_t disks = {
     .folder = "cpc",
     .extensions = extensions,
+    .cart_extensions = cart_extensions,
     .description = "Disks (.DSK), cartridges (.CPR), ROMs (.ROM)",
     .title = "Disks and cartridge",
     .button = "Disks",
