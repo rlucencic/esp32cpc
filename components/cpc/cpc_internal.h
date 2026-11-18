@@ -78,6 +78,7 @@ void video_int_ack(void);               /* the Z80 took the interrupt */
 void video_set_pen_rgb(int pen, uint16_t rgb565);   /* Plus palette */
 uint8_t video_mode(void);
 void video_crtc_regs(uint8_t *regs);    /* 18 */
+void video_palette(uint32_t *rgb);      /* 17: pens and border, 0xRRGGBB (the web page) */
 uint32_t video_signature(void);
 
 /* ---- asic.c: the Plus ASIC ---- */

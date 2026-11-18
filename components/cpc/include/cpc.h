@@ -78,7 +78,30 @@ typedef struct {
     bool asic_unlocked;
     uint8_t mode;               /* screen mode 0-3 */
     uint8_t crtc[18];
+    /* For the web page (copies, read while the emulation runs): */
+    uint8_t im;                 /* the Z80's interrupt mode */
+    bool ei;                    /* ... and its interrupts enabled (IFF1) */
+    uint8_t ram_config;         /* the last RAM configuration byte's low 6 bits */
+    uint8_t rom_config;         /* the Gate Array's mode and ROM register (%100iulmm) */
+    uint8_t upper_rom;          /* the selected upper ROM number */
+    uint16_t expansion_roms;    /* bit n: an expansion ROM in slot n */
+    uint32_t rgb[17];           /* pens 0-15 and the border, 0xRRGGBB */
+    /* the Plus ASIC */
+    uint8_t rmr2;               /* lower ROM page and position, the register page */
+    uint8_t sprites;            /* sprites with a magnification (shown) */
+    uint8_t pri;                /* raster interrupt line (0: the Gate Array's) */
+    uint8_t sssl;               /* split screen after this line (0: none) */
+    uint16_t ssa;               /* ... from this CRTC address */
+    uint8_t hscroll, vscroll;   /* soft scroll */
+    uint8_t dma;                /* DMA sound channels on (bits 0-2) */
 } cpc_status_t;
+
+/* The AY's registers now (the sound the program asked for) */
+typedef struct {
+    uint8_t reg[14];
+} cpc_sound_t;
+
+void cpc_get_sound(cpc_sound_t *sound);
 
 /* Set up the machine and cold-reset it. False if something is missing. */
 bool cpc_init(const cpc_config_t *config);

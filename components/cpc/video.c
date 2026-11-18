@@ -627,6 +627,24 @@ void video_crtc_regs(uint8_t *regs)
     memcpy(regs, v.reg, 18);
 }
 
+/* The colours of the pens and the border: on a Plus the ASIC's 12-bit
+ * ones (the Gate Array's colours are stored there too), else the Gate
+ * Array's hardware colours
+ */
+void video_palette(uint32_t *rgb)
+{
+    static const uint8_t level[3] = { 0x00, 0x80, 0xFF };
+    for (int i = 0; i < 17; i++) {
+        if (cpc.plus && asic.page != NULL) {
+            uint8_t rb = asic.page[0x2400 + i * 2], g = asic.page[0x2401 + i * 2] & 15;
+            rgb[i] = ((rb >> 4) * 17u << 16) | (g * 17u << 8) | ((rb & 15) * 17u);
+        } else {
+            const uint8_t *c = hw_rgb[v.ink[i] & 31];
+            rgb[i] = ((uint32_t)level[c[0]] << 16) | (level[c[1]] << 8) | level[c[2]];
+        }
+    }
+}
+
 uint32_t video_signature(void)
 {
     return v.signature;
@@ -654,6 +672,7 @@ void video_reset(void)
     v.disp_x0 = INT_MIN;
     memset(s_pal, 0, sizeof(s_pal));
     memset(s_pal2, 0, sizeof(s_pal2));
+    memset(v.ink, 20, sizeof(v.ink));   /* black, as s_pal, until the firmware sets them */
     memset(s_hash, 0xA5, sizeof(s_hash));
     new_frame();
 }

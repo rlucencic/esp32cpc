@@ -117,6 +117,12 @@ void psg_reset(void)
     ay.control = 0;
 }
 
+/* For the web page: the registers as the program wrote them */
+void cpc_get_sound(cpc_sound_t *sound)
+{
+    memcpy(sound->reg, ay.reg, sizeof(sound->reg));
+}
+
 void audio_frame_end(void)
 {
     uint64_t t = video_clock() / US_PER_SAMPLE;

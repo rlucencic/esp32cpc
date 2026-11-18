@@ -443,6 +443,34 @@ void cpc_get_status(cpc_status_t *s)
     s->asic_unlocked = asic.unlocked;
     s->mode = video_mode();
     video_crtc_regs(s->crtc);
+    /* for the web page: plain copies (the emulation runs meanwhile) */
+    s->im = z80.im;
+    s->ei = z80.iff1;
+    s->ram_config = cpc.ram_config;
+    s->rom_config = cpc.rom_config;
+    s->upper_rom = cpc.upper_rom;
+    s->expansion_roms = 0;
+    for (int n = 0; n < CPC_ROM_SLOTS; n++) {
+        s->expansion_roms |= cpc.slots[n] != NULL ? 1u << n : 0;
+    }
+    video_palette(s->rgb);
+    s->rmr2 = cpc.rmr2;
+    s->sprites = 0;
+    s->pri = s->sssl = s->hscroll = s->vscroll = s->dma = 0;
+    s->ssa = 0;
+    if (cpc.plus) {
+        for (int n = 0; n < 16; n++) {
+            s->sprites += asic.spr_mx[n] && asic.spr_my[n];
+        }
+        s->pri = asic.pri;
+        s->sssl = asic.sssl;
+        s->ssa = asic.ssa;
+        s->hscroll = asic.hscroll;
+        s->vscroll = asic.vscroll;
+        for (int c = 0; c < 3; c++) {
+            s->dma |= asic.dma[c].enabled ? 1u << c : 0;
+        }
+    }
 }
 
 cpc_model_t cpc_model(void)

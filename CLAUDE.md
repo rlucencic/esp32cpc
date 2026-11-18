@@ -44,6 +44,16 @@ bash -c '. $IDF_PATH/export.sh >/dev/null 2>&1; \
 - `../esp32emu/tools/emu_console.py PORT log N | screenshot F.png | lcd F.png | send "cmd" ... | info | reset`
   with the IDF venv's Python (`-I`). One touch per `send` call.
 - `curl http://amstrad.local/api/status`; disks: see `../esp32emu/README.md`.
+- The web page's machine card (`status()`, `main/main.c`) shows the state
+  now: the Z80's interrupt mode, the ROMs and what's paged in at &0000 and
+  &C000, the RAM configuration, the mode with its size and screen memory
+  (the CRTC's R1, R6, R9, R12/R13), the mode's pens and the border as
+  swatches, the Plus ASIC (sprites, split, soft scroll, raster interrupt),
+  the AY's channels (and the Plus DMA), the special keys, the disk formats.
+  The core's copies for it: `cpc_get_status()`, `cpc_get_sound()`. The
+  whole reply has 4 KB (esp32emu's `STATUS_SIZE`); the rows' longest case
+  (a 6128 Plus in mode 0, all channels sounding, every ASIC feature) is
+  ~1.76 KB of it, measured on the host: keep them short.
 - Flashing restarts the board and ends the user's session: say so first.
 
 Console commands: the shared ones (`s` `L` `r` `F` `t` `i`, see

@@ -385,25 +385,183 @@ static void every_second(void)
     }
 }
 
-/* ---- Status ---- */
+/* ---- Status ----
+ *
+ * The web page's machine card: the state now, a short line a row. The
+ * whole /api/status reply has 4 KB (esp32emu's STATUS_SIZE), these rows
+ * at most ~1.8 KB of it (the 6128 Plus's longest case 1.76 KB): keep them
+ * short (an & goes out as &amp;, a " as \").
+ */
+
+/* A colour as a swatch */
+static size_t swatch(char *text, size_t size, uint32_t rgb)
+{
+    int n = snprintf(text, size, "<b style=\"background:#%06lx\">&nbsp;&nbsp;&nbsp;</b> ",
+                     (unsigned long)(rgb & 0xFFFFFF));
+    return n < 0 ? 0 : (size_t)n < size ? (size_t)n : size - 1;
+}
+
+/* The upper ROM selected now */
+static void upper_rom_text(char *text, size_t size, const cpc_status_t *s)
+{
+    unsigned n = s->upper_rom;
+    bool own = !cpc_cart_is_plus();             /* the system cartridge, not a game's */
+    if (n < CPC_ROM_SLOTS && n != 7 && (s->expansion_roms & (1u << n)) && (n != 0 || !s->plus)) {
+        snprintf(text, size, "ROM %u (expansion)", n);
+    } else if (s->plus) {
+        if (n & 0x80) {
+            snprintf(text, size, "cartridge page %u", n & 31);
+        } else {
+            snprintf(text, size, "ROM %u = page %u%s", n, n == 7 ? 3 : 1, !own ? "" : n == 7 ? " (AMSDOS)" : " (BASIC)");
+        }
+    } else {
+        snprintf(text, size, "ROM %u (%s)", n, n == 7 && s_cfg.amsdos ? "AMSDOS" : "BASIC");
+    }
+}
+
+/* The AY's channels as they sound now (its clock 1 MHz) */
+static void sound_text(char *text, size_t size, const cpc_status_t *s)
+{
+    cpc_sound_t snd;
+    cpc_get_sound(&snd);
+    const uint8_t *r = snd.reg;
+    size_t n = 0;
+    bool envelope = false;
+    for (int c = 0; c < 3 && n < size; c++) {
+        bool tone = !(r[7] & (1 << c)), noise = !(r[7] & (8 << c));
+        unsigned volume = r[8 + c] & 31;
+        if (volume == 0) {
+            continue;
+        }
+        unsigned period = r[c * 2] | ((r[c * 2 + 1] & 15) << 8);
+        char what[40];
+        if (tone) {
+            snprintf(what, sizeof(what), "%u Hz%s", 1000000u / (16 * (period ? period : 1)), noise ? " + noise" : "");
+        } else {
+            snprintf(what, sizeof(what), noise ? "noise" : "a fixed level");
+        }
+        char level[16];
+        snprintf(level, sizeof(level), "volume %u", volume);
+        n += snprintf(text + n, size - n, "%s%c %s, %s", n ? "; " : "", 'A' + c, what,
+                      (volume & 16) ? "envelope" : level);
+        envelope |= volume & 16;
+    }
+    if (n == 0) {
+        n = snprintf(text, size, "Silent");
+    }
+    if (envelope && n < size) {
+        /* one sweep of the envelope: 256 x its period in 1 MHz cycles */
+        unsigned us = 256u * ((r[11] | (r[12] << 8)) ? (r[11] | (r[12] << 8)) : 1);
+        n += snprintf(text + n, size - n, "; envelope shape %u, %u ms", r[13] & 15, (us + 500) / 1000);
+    }
+    if (s->dma && n < size) {
+        snprintf(text + n, size - n, "; DMA%s%s%s on", (s->dma & 1) ? " 0" : "", (s->dma & 2) ? " 1" : "",
+                 (s->dma & 4) ? " 2" : "");
+    }
+}
 
 static void status(emu_json_t *j, int section)
 {
-    char text[160];
+    char text[256];
     if (section == EMU_STATUS_ROWS) {
-        snprintf(text, sizeof(text), "%s, %u KB", model_full[cpc_model()], (unsigned)(s_cfg.ram_size / 1024));
-        emu_json_row(j, "System", text);
-        emu_json_row(j, "ROMs", s_rom_text);
         cpc_status_t s;
         cpc_get_status(&s);
-        /* CRTC characters are 2 bytes: 4, 8 or 16 pixels in modes 0, 1, 2 */
+        unsigned ram_kb = (unsigned)(s_cfg.ram_size / 1024);
+        snprintf(text, sizeof(text), "%s: a Z80A at 4 MHz (IM %u, interrupts %s), %u KB RAM, %s, an AY-3-8912",
+                 model_full[cpc_model()], s.im, s.ei ? "on" : "off", ram_kb,
+                 s.plus ? "the ASIC" : "the Gate Array, a 6845 CRTC");
+        emu_json_row(j, "System", text);
+
+        /* the ROMs, and what's paged in at &0000 and &C000 */
+        char low[40], high[48];
+        if (s.rom_config & 0x04) {
+            snprintf(low, sizeof(low), "RAM at &amp;0000");
+        } else if (s.plus) {
+            static const char *const at[4] = { "&amp;0000", "&amp;4000", "&amp;8000", "&amp;0000" };
+            snprintf(low, sizeof(low), "page %u at %s", s.rmr2 & 7, at[(s.rmr2 >> 3) & 3]);
+        } else {
+            snprintf(low, sizeof(low), "the OS at &amp;0000");
+        }
+        if (s.rom_config & 0x08) {
+            snprintf(high, sizeof(high), "RAM");
+        } else {
+            upper_rom_text(high, sizeof(high), &s);
+        }
+        snprintf(text, sizeof(text), "%s; now %s, %s at &amp;C000", s_rom_text, low, high);
+        emu_json_row(j, "ROM", text);
+
+        /* the 6128's RAM configurations (&7F00, %11bbbccc): which 16 KB block
+         * at &0000, &4000, &8000, &C000 (4-7: the second 64 KB)
+         */
+        if (ram_kb > 64) {
+            static const uint8_t map[8][4] = {
+                { 0, 1, 2, 3 }, { 0, 1, 2, 7 }, { 4, 5, 6, 7 }, { 0, 3, 2, 7 },
+                { 0, 4, 2, 3 }, { 0, 5, 2, 3 }, { 0, 6, 2, 3 }, { 0, 7, 2, 3 },
+            };
+            const uint8_t *m = map[s.ram_config & 7];
+            snprintf(text, sizeof(text), "RAM configuration &amp;%02X: blocks %u, %u, %u, %u%s",
+                     0xC0 | s.ram_config, m[0], m[1], m[2], m[3],
+                     s.plus && s.asic_unlocked && (s.rmr2 & 0x18) == 0x18 ? "; the ASIC's registers at &amp;4000" : "");
+        } else {
+            snprintf(text, sizeof(text), "64 KB, no banking");
+        }
+        emu_json_row(j, "Memory", text);
+
+        /* the CRTC: R1 characters of 2 bytes across (4, 8 or 16 pixels in
+         * modes 0, 1, 2), R6 rows of R9 + 1 lines; R12/R13 the start
+         */
         static const uint8_t pixels_per_char[4] = { 4, 8, 16, 4 };
-        snprintf(text, sizeof(text), "mode %d, %d × %d pixels, 50 Hz%s", s.mode,
-                 s.crtc[1] * pixels_per_char[s.mode & 3], s.crtc[6] * ((s.crtc[9] & 31) + 1),
-                 s.plus ? (s.asic_unlocked ? ", ASIC unlocked" : ", ASIC locked") : "");
+        static const uint8_t colours[4] = { 16, 4, 2, 4 };
+        unsigned mode = s.mode & 3;
+        unsigned base = (s.crtc[12] & 0x30) << 10;
+        unsigned start = base | (((s.crtc[12] & 3) << 8 | s.crtc[13]) << 1);
+        unsigned end = base + ((s.crtc[12] & 0x0C) == 0x0C ? 0x7FFF : 0x3FFF);
+        snprintf(text, sizeof(text), "Mode %u: %u × %u, %u colours; screen &amp;%04X-&amp;%04X from &amp;%04X",
+                 mode, s.crtc[1] * pixels_per_char[mode], s.crtc[6] * ((s.crtc[9] & 31) + 1), colours[mode], base,
+                 end & 0xFFFF, start & 0xFFFF);
         emu_json_row(j, "Screen", text);
-        emu_json_row(j, "Joystick", s_arrows_joystick ? "numeric keypad and cursor keys (F12)"
-                                                       : "numeric keypad (F12: cursor keys too)");
+
+        /* the pens the mode uses, then the border */
+        static char swatches[1100];
+        size_t n = (size_t)snprintf(swatches, sizeof(swatches), "Pens 0-%u: ", colours[mode] - 1);
+        for (unsigned i = 0; i < colours[mode]; i++) {
+            n += swatch(swatches + n, sizeof(swatches) - n, s.rgb[i]);
+        }
+        n += snprintf(swatches + n, sizeof(swatches) - n, "border: ");
+        swatch(swatches + n, sizeof(swatches) - n, s.rgb[16]);
+        emu_json_row(j, "Palette", swatches);
+
+        if (s.plus) {
+            if (!s.asic_unlocked) {
+                snprintf(text, sizeof(text), "Locked (as the classic CPC)");
+            } else {
+                char split[48] = "";
+                if (s.sssl) {
+                    unsigned at = ((s.ssa & 0x3000) << 2) | ((s.ssa & 0x3FF) << 1);
+                    snprintf(split, sizeof(split), ", split at line %u (&amp;%04X)", s.sssl, at);
+                }
+                char raster[40] = "";
+                if (s.pri) {
+                    snprintf(raster, sizeof(raster), ", raster interrupt at %u", s.pri);
+                }
+                snprintf(text, sizeof(text), "Unlocked; %u sprites%s, soft scroll %u, %u%s", s.sprites, split,
+                         s.hscroll, s.vscroll, raster);
+            }
+            emu_json_row(j, "ASIC", text);
+        }
+
+        sound_text(text, sizeof(text), &s);
+        emu_json_row(j, "Sound", text);
+        emu_json_row(j, "Keyboard", "By position; Backspace DEL, Delete CLR, Insert or Alt COPY, "
+                     "F1-F11 f1-f9 f0 f., keypad Enter ENTER");
+        snprintf(text, sizeof(text), "%s; a mouse: AMX, Symbiface II", s_arrows_joystick ?
+                 "Keypad and cursor keys (0, 5, Alt fire; F12 off)" : "Keypad (0, 5 fire; F12: the cursor keys too)");
+        emu_json_row(j, "Joystick", text);
+        cpc_disk_status_t ds;
+        cpc_disk_status(&ds);
+        snprintf(text, sizeof(text), "uPD765: .DSK, extended .DSK (data, system, IBM formats)%s; slot: "
+                 ".CPR, .ROM", ds.motor ? "; motor on" : "");
+        emu_json_row(j, "Disks", text);
         return;
     }
     cpc_disk_status_t ds;
