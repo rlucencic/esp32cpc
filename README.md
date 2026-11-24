@@ -273,6 +273,10 @@ options and the lessons learned along the way.
 - Plus: no analogue joysticks or light gun; sprites only over the screen
   area, not the border.
 
+## Roadmap
+
+See [TODO.md](TODO.md) for proposed work and how to verify it.
+
 ## Credits
 
 - [Caprice32](https://github.com/ColinPitrat/caprice32), the Arnold V
